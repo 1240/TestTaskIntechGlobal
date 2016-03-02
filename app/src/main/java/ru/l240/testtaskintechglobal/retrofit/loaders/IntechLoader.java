@@ -3,13 +3,12 @@ package ru.l240.testtaskintechglobal.retrofit.loaders;
 import android.content.Context;
 
 import java.io.IOException;
-import java.util.List;
 
-import retrofit.Call;
-import ru.l240.testtaskintechglobal.models.Melody;
+import retrofit2.Call;
+import ru.l240.testtaskintechglobal.models.Melodies;
 import ru.l240.testtaskintechglobal.retrofit.ApiFac;
-import ru.l240.testtaskintechglobal.retrofit.response.IntechResponse;
 import ru.l240.testtaskintechglobal.retrofit.IntechService;
+import ru.l240.testtaskintechglobal.retrofit.response.IntechResponse;
 import ru.l240.testtaskintechglobal.retrofit.response.RequestResult;
 import ru.l240.testtaskintechglobal.retrofit.response.Response;
 
@@ -28,9 +27,8 @@ public class IntechLoader extends BaseLoader {
     @Override
     protected Response apiCall() throws IOException {
         IntechService service = ApiFac.getMelodyService();
-        Call<Melodies> call = service.melodies("20", "0");
-//        Call<List<Melody>> call = service.melodies("55.749792,37.6324949");
-        List<Melody> melodies = call.execute().body();
+        Call<Melodies> call = service.melodies(20, from * 20);
+        Melodies melodies = call.execute().body();
         return new IntechResponse()
                 .setRequestResult(RequestResult.SUCCESS)
                 .setAnswer(melodies);
