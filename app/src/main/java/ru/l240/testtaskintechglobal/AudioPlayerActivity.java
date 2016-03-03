@@ -27,8 +27,8 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("sb", sb.getProgress());
-        outState.putBoolean("isPlaying", mp.isPlaying());
-        if (mp.isPlaying())
+        outState.putBoolean("isPlaying", mp != null && mp.isPlaying());
+        if (mp != null && mp.isPlaying())
             mp.pause();
     }
 
@@ -48,20 +48,23 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
                 .load(melody.getPicUrl())
                 .placeholder(R.mipmap.song_preview)
                 .into(iv);
+        mp = new MediaPlayer();
+        try {
+            mp.setDataSource(melody.getDemoUrl());
+            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mp.prepare();
+            mp.start();
+            mp.pause();
+            sb.setMax(mp.getDuration());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        new Thread(this).start();
         if (savedInstanceState != null) {
             int sb = savedInstanceState.getInt("sb");
             boolean isPlaying = savedInstanceState.getBoolean("isPlaying");
-            mp = new MediaPlayer();
-            try {
-                mp.setDataSource(melody.getDemoUrl());
-                mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mp.prepare();
-                this.sb.setMax(mp.getDuration());
-                mp.seekTo(sb);
-                this.sb.setProgress(sb);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            this.sb.setMax(mp.getDuration());
+            mp.seekTo(sb);
             mp.start();
             mp.pause();
             if (isPlaying) {
@@ -74,9 +77,12 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (mp != null && fromUser) {
-                    mp.pause();
+                    boolean playing = mp.isPlaying();
+                    if (playing)
+                        mp.pause();
                     mp.seekTo(progress);
-                    mp.start();
+                    if (playing)
+                        mp.start();
                 }
             }
 
@@ -101,7 +107,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
 
     public void start(View view) {
         if (mp != null && mp.isPlaying()) return;
-        if (sb.getProgress() > 0) {
+        if (mp != null && sb.getProgress() > 0) {
             mp.start();
             return;
         }
@@ -113,8 +119,9 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mp.start();
         sb.setMax(mp.getDuration());
+        mp.seekTo(sb.getProgress());
+        mp.start();
         new Thread(this).start();
 
     }
@@ -142,12 +149,13 @@ public class AudioPlayerActivity extends AppCompatActivity implements Runnable {
     }
 
     public void stop(View view) {
-        if (mp != null && mp.isPlaying()) {
-            mp.stop();
+        if (mp != null) {
+            if (mp.isPlaying())
+                mp.stop();
             mp.release();
         }
-            mp = null;
-            sb.setProgress(0);
+        mp = null;
+        sb.setProgress(0);
 
     }
 }

@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         int id = item.getItemId();
         switch (id) {
             case R.id.action_list:
+                if (isList)
+                    break;
                 isList = true;
                 MelodyFragment melodyFragment = MelodyFragment.newInstance(1);
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -71,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 transaction.commit();
                 break;
             case R.id.action_table:
+                if (!isList)
+                    break;
                 isList = false;
                 MelodyFragment melodyFragmentT = MelodyFragment.newInstance(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 3 : 2);
                 FragmentTransaction transactionT = getSupportFragmentManager().beginTransaction();
